@@ -1,2 +1,161 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// Kitap yapısı
+typedef struct {
+    int id;
+    char ad[100];
+    char yazar[100];
+    int durum; // 0: Mevcut, 1: Ödünç Verildi
+} Kitap;
+
+// Fonksiyonlar
+int kullaniciGirisi();
+void kitapEkle(Kitap kitaplar[], int *kitapSayisi);
+void kitapCikar(Kitap kitaplar[], int *kitapSayisi);
+void oduncAl(Kitap kitaplar[], int kitapSayisi);
+void iadeEt(Kitap kitaplar[], int kitapSayisi);
+
+int main() {
+    // Kullanıcı girişini kontrol et
+    if (!kullaniciGirisi()) {
+        printf("Yanlış kullanıcı adı veya şifre! Program sonlandırılıyor...\n");
+        return 0;
+    }
+
+    Kitap kitaplar[100];
+    int kitapSayisi = 0;
+    int secim;
+
+    while (1) {
+        printf("\n--- Kütüphane Sistemi ---\n");
+        printf("1. Kitap Ekle\n");
+        printf("2. Kitap Çıkar\n");
+        printf("3. Ödünç Al\n");
+        printf("4. İade Et\n");
+        printf("5. Çıkış\n");
+        printf("Seçiminiz: ");
+        scanf("%d", &secim);
+
+        switch (secim) {
+            case 1:
+                kitapEkle(kitaplar, &kitapSayisi);
+                break;
+            case 2:
+                kitapCikar(kitaplar, &kitapSayisi);
+                break;
+            case 3:
+                oduncAl(kitaplar, kitapSayisi);
+                break;
+            case 4:
+                iadeEt(kitaplar, kitapSayisi);
+                break;
+            case 5:
+                printf("Programdan çıkılıyor...\n");
+                exit(0);
+            default:
+                printf("Geçersiz seçim! Lütfen tekrar deneyin.\n");
+        }
+    }
+    return 0;
+}
+
+int kullaniciGirisi() {
+    char dogruKullaniciAdi[] = "admin";
+    char dogruSifre[] = "1234";
+
+    char kullaniciAdi[50];
+    char sifre[50];
+
+    printf("Kullanıcı Adı: ");
+    scanf("%s", kullaniciAdi);
+    printf("Şifre: ");
+    scanf("%s", sifre);
+
+    if (strcmp(kullaniciAdi, dogruKullaniciAdi) == 0 && strcmp(sifre, dogruSifre) == 0) {
+        printf("Giriş başarılı! Hoş geldiniz, %s.\n", kullaniciAdi);
+        return 1;  // Başarılı giriş
+    } else {
+        return 0;  // Hatalı giriş
+    }
+}
+
+void kitapEkle(Kitap kitaplar[], int *kitapSayisi) {
+    printf("Kitap ID: ");
+    scanf("%d", &kitaplar[*kitapSayisi].id);
+    printf("Kitap Adı: ");
+    scanf(" %[^\n]s", kitaplar[*kitapSayisi].ad);
+    printf("Yazar Adı: ");
+    scanf(" %[^\n]s", kitaplar[*kitapSayisi].yazar);
+    kitaplar[*kitapSayisi].durum = 0; // Mevcut olarak ekleniyor
+    (*kitapSayisi)++;
+    printf("Kitap başarıyla eklendi!\n");
+}
+
+void kitapCikar(Kitap kitaplar[], int *kitapSayisi) {
+    int id, i, bulundu = 0;
+    printf("Silmek istediğiniz kitabın ID'si: ");
+    scanf("%d", &id);
+
+    for (i = 0; i < *kitapSayisi; i++) {
+        if (kitaplar[i].id == id) {
+            bulundu = 1;
+            for (int j = i; j < *kitapSayisi - 1; j++) {
+                kitaplar[j] = kitaplar[j + 1];
+            }
+            (*kitapSayisi)--;
+            printf("Kitap başarıyla çıkarıldı!\n");
+            break;
+        }
+    }
+    if (!bulundu) {
+        printf("Kitap bulunamadı.\n");
+    }
+}
+
+void oduncAl(Kitap kitaplar[], int kitapSayisi) {
+    int id, i, bulundu = 0;
+    printf("Ödünç almak istediğiniz kitabın ID'si: ");
+    scanf("%d", &id);
+
+    for (i = 0; i < kitapSayisi; i++) {
+        if (kitaplar[i].id == id) {
+            bulundu = 1;
+            if (kitaplar[i].durum == 0) {
+                kitaplar[i].durum = 1; // Ödünç verildi
+                printf("Kitap başarıyla ödünç alındı!\n");
+            } else {
+                printf("Bu kitap zaten ödünç alınmış.\n");
+            }
+            break;
+        }
+    }
+    if (!bulundu) {
+        printf("Kitap bulunamadı.\n");
+    }
+}
+
+void iadeEt(Kitap kitaplar[], int kitapSayisi) {
+    int id, i, bulundu = 0;
+    printf("İade etmek istediğiniz kitabın ID'si: ");
+    scanf("%d", &id);
+
+    for (i = 0; i < kitapSayisi; i++) {
+        if (kitaplar[i].id == id) {
+            bulundu = 1;
+            if (kitaplar[i].durum == 1) {
+                kitaplar[i].durum = 0; // Kitap mevcut duruma geçti
+                printf("Kitap başarıyla iade edildi!\n");
+            } else {
+                printf("Bu kitap zaten mevcut durumda.\n");
+            }
+            break;
+        }
+    }
+    if (!bulundu) {
+        printf("Kitap bulunamadı.\n");
+    }
+}
